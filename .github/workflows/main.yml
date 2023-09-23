@@ -17,6 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup mold
+        uses: rui314/setup-mold@v1
+        with:
+          make-default: true
+
       - name: Setup rust
         uses: ATiltedTree/setup-rust@v1
         with:
