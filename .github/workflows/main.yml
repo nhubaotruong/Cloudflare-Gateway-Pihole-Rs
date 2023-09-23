@@ -1,0 +1,32 @@
+name: Add Rules to Cloudflare Gateway
+on:
+  schedule:
+    - cron: "10 20 * * *"
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  run:
+    name: Cloudflare Gateway
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Run
+        run: cargo run --release
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_IDENTIFIER: ${{ secrets.CF_IDENTIFIER }}
