@@ -1,2 +1,2 @@
 [build]
-rustflags = ["-C", "opt-level=3", "-C", "target-cpu=native", "-C", "link-arg=-fuse-ld=mold"]
+rustflags = ["-C", "opt-level=3", "-C", "link-arg=-fuse-ld=mold"]
