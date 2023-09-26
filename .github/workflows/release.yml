@@ -1,28 +1,45 @@
-name: Release
+name: Rust Build and Release
 on:
   push:
     tags:
       - "v*"
-
 jobs:
-  release:
-    name: Releases
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Setup mold
         uses: rui314/setup-mold@v1
         with:
           make-default: true
 
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup rust
+        uses: ATiltedTree/setup-rust@v1
         with:
-          RUSTTARGET: x86_64-unknown-linux-musl
-          EXTRA_FILES: "README.md LICENSE"
+          rust-version: stable
+
+      - name: Build
+        run: cargo build --release --locked --target x86_64-unknown-linux-gnu
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudflare_gateway_pihole
+          path: target/release/cloudflare_gateway_pihole
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download binary
+        uses: actions/download-artifact@v3
+        with:
+          name: cloudflare_gateway_pihole
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/cloudflare_gateway_pihole
+          tag_name: ${{ github.ref }}
