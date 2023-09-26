@@ -3,8 +3,9 @@ on:
   schedule:
     - cron: "10 20 * * *"
   push:
-    branches:
-      - main
+    paths:
+      - lists.txt
+      - whitelists.txt
   workflow_dispatch:
 jobs:
   run:
