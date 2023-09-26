@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cloudflare_gateway_pihole
-          path: target/release/cloudflare_gateway_pihole
+          path: target/x86_64-unknown-linux-gnu/release/cloudflare_gateway_pihole
   release:
     name: Release
     needs: build
