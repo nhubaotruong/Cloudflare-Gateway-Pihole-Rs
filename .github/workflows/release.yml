@@ -36,10 +36,9 @@ jobs:
     steps:
       - name: Download binary
         uses: actions/download-artifact@v3
-        with:
-          name: cloudflare_gateway_pihole
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: target/release/cloudflare_gateway_pihole
+          files: cloudflare_gateway_pihole/cloudflare_gateway_pihole
           tag_name: ${{ github.ref }}
