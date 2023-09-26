@@ -1,10 +1,10 @@
 name: Add Rules to Cloudflare Gateway Daily
 on:
-  # schedule:
-  #   - cron: "10 20 * * *"
-  # push:
-  #   branches:
-  #     - main
+  schedule:
+    - cron: "10 20 * * *"
+  push:
+    branches:
+      - main
   workflow_dispatch:
 jobs:
   run:
@@ -14,24 +14,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: Setup mold
-        uses: rui314/setup-mold@v1
+      - name: Download latest build
+        uses: actions/fetch-github-release-asset
         with:
-          make-default: true
-
-      - name: Setup rust
-        uses: ATiltedTree/setup-rust@v1
-        with:
-          rust-version: stable
-
-      - name: Build
-        run: cargo build --release
+          repo: "nhubaotruong/Cloudflare-Gateway-Pihole-Rs"
+          file: "cloudflare_gateway_pihole"
 
       - name: Run
-        run: cargo run --release
+        run: |
+          chmod +x cloudflare_gateway_pihole
+          ./cloudflare_gateway_pihole
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_IDENTIFIER: ${{ secrets.CF_IDENTIFIER }}
