@@ -2,4 +2,4 @@
 
 Rewrite in Rust for fun.
 
-But for this kind of heavy IO task, rust is not worth it, due to complex setup, complex code and slow compile time.
+Uses github to built binary, on schedule just download the binary to run
