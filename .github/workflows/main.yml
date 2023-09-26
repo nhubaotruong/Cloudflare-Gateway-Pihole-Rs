@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download latest build
-        uses: actions/fetch-github-release-asset
+        uses: actions/fetch-github-release-asset@1.1.1
         with:
           repo: "nhubaotruong/Cloudflare-Gateway-Pihole-Rs"
           file: "cloudflare_gateway_pihole"
