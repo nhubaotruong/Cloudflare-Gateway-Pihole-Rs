@@ -14,11 +14,18 @@ async fn main() {
     let mut block_list = black_list
         .difference(&white_list)
         .par_bridge()
+        .map(|x| x.to_string())
         .collect::<Vec<_>>();
     block_list.sort();
     println!("Black list size: {}", black_list.len());
     println!("White list size: {}", white_list.len());
     println!("Block list size: {}", block_list.len());
+
+    // match tokio::fs::write("block_list.txt", block_list.join("\n")).await {
+    //     Ok(_) => println!("Wrote {} block list to file", block_list.len()),
+    //     Err(e) => println!("Error writing block list to file: {}", e),
+    // }
+    // return;
 
     let cf_prefix = "[AdBlock-DNS Block List]";
     let cf_lists = cloudflare::get_cf_lists(cf_prefix).await;

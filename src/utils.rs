@@ -1,5 +1,6 @@
 use futures::future::join_all;
 use once_cell::sync::Lazy;
+use radix_trie::Trie;
 use rayon::prelude::*;
 use regex::Regex;
 use reqwest::Client;
@@ -35,12 +36,12 @@ async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
         .par_iter()
         .map(|url| download_content(url, &client))
         .collect::<Vec<_>>();
-    let content = join_all(tasks)
+    let content: Vec<String> = join_all(tasks)
         .await
-        .iter()
+        .par_iter()
         .map(|x| x.to_string())
-        .collect::<Vec<_>>();
-    let filtered_content = content
+        .collect();
+    let filtered_content: HashSet<String> = content
         .par_iter()
         .map(|text| {
             text.split("\n")
@@ -48,8 +49,50 @@ async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
                 .filter_map(|x| filter_domain(&x))
         })
         .flatten()
-        .collect::<HashSet<_>>();
-    return filtered_content;
+        .collect();
+
+    let mut trie = Trie::new();
+
+    for domain in &filtered_content {
+        let splitted = domain.rsplit('.').collect::<Vec<_>>();
+        trie.insert(
+            splitted
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join("."),
+            (),
+        );
+    }
+
+    let filtered_domains: HashSet<_> = filtered_content
+        .into_iter()
+        .filter(|domain| {
+            let parts: Vec<_> = domain.split('.').collect();
+            if parts.len() <= 1 {
+                return false;
+            }
+            if parts.len() == 2 {
+                return true;
+            }
+            let reverted_parts = parts.iter().rev().collect::<Vec<_>>();
+            let reverted_domain = reverted_parts
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(".");
+            let suffix = &reverted_domain[reverted_parts[0..2]
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(".")
+                .len()
+                + 1..];
+            !trie.get_raw_descendant(suffix).is_some()
+        })
+        .collect();
+
+    return filtered_domains;
 }
 
 async fn download_content(url: &str, client: &Client) -> String {
