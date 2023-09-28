@@ -7,8 +7,8 @@ mod utils;
 #[tokio::main]
 async fn main() {
     let (black_list, white_list) = tokio::join!(
-        utils::read_file_content_and_download("lists.txt"),
-        utils::read_file_content_and_download("whitelists.txt")
+        utils::read_file_content_and_download("lists.txt", false),
+        utils::read_file_content_and_download("whitelists.txt", true)
     );
 
     let mut block_list = black_list

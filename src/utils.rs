@@ -6,9 +6,9 @@ use reqwest::Client;
 use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 
-pub async fn read_file_content_and_download(name: &str) -> HashSet<String> {
+pub async fn read_file_content_and_download(name: &str, skip_filter: bool) -> HashSet<String> {
     let urls = read_file_content(name).await;
-    let content = get_content_from_urls(urls).await;
+    let content = get_content_from_urls(urls, skip_filter).await;
     return content;
 }
 
@@ -29,7 +29,7 @@ async fn read_file_content(name: &str) -> Vec<String> {
     return content;
 }
 
-async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
+async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<String> {
     let client = Client::new();
     let tasks = urls
         .par_iter()
@@ -45,6 +45,10 @@ async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
         })
         .flatten()
         .collect();
+
+    if skip_filter {
+        return filtered_content;
+    }
 
     let mut domain_map: HashMap<String, HashSet<String>> = HashMap::new();
 
