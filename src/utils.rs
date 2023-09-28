@@ -1,10 +1,9 @@
 use futures::future::join_all;
 use once_cell::sync::Lazy;
-use radix_trie::Trie;
 use rayon::prelude::*;
 use regex::Regex;
 use reqwest::Client;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 
 pub async fn read_file_content_and_download(name: &str) -> HashSet<String> {
@@ -36,11 +35,7 @@ async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
         .par_iter()
         .map(|url| download_content(url, &client))
         .collect::<Vec<_>>();
-    let content: Vec<String> = join_all(tasks)
-        .await
-        .par_iter()
-        .map(|x| x.to_string())
-        .collect();
+    let content: Vec<String> = join_all(tasks).await.par_iter().cloned().collect();
     let filtered_content: HashSet<String> = content
         .par_iter()
         .map(|text| {
@@ -51,46 +46,38 @@ async fn get_content_from_urls(urls: Vec<String>) -> HashSet<String> {
         .flatten()
         .collect();
 
-    let mut trie = Trie::new();
+    let mut domain_map: HashMap<String, HashSet<String>> = HashMap::new();
 
     for domain in &filtered_content {
-        let splitted = domain.rsplit('.').collect::<Vec<_>>();
-        trie.insert(
-            splitted
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>()
-                .join("."),
-            (),
-        );
+        let splitted = domain.split('.').collect::<Vec<_>>();
+        if splitted.len() <= 1 {
+            continue;
+        }
+        let domain_part = splitted[splitted.len() - 2..].join(".");
+        domain_map
+            .entry(domain_part)
+            .or_insert(HashSet::new())
+            .insert(domain.to_string());
     }
 
-    let filtered_domains: HashSet<_> = filtered_content
-        .into_iter()
-        .filter(|domain| {
-            let parts: Vec<_> = domain.split('.').collect();
-            if parts.len() <= 1 {
-                return false;
+    let filtered_domains = domain_map
+        .par_iter()
+        .filter_map(|(domain_part, domain_names)| {
+            if domain_names.contains(domain_part)
+                || domain_names.contains(&format!("www.{}", domain_part))
+            {
+                Some(
+                    [domain_part.to_string()]
+                        .iter()
+                        .cloned()
+                        .collect::<HashSet<_>>(),
+                )
+            } else {
+                Some(domain_names.par_iter().cloned().collect::<HashSet<_>>())
             }
-            if parts.len() == 2 {
-                return true;
-            }
-            let reverted_parts = parts.iter().rev().collect::<Vec<_>>();
-            let reverted_domain = reverted_parts
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>()
-                .join(".");
-            let suffix = &reverted_domain[reverted_parts[0..2]
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>()
-                .join(".")
-                .len()
-                + 1..];
-            !trie.get_raw_descendant(suffix).is_some()
         })
-        .collect();
+        .flatten()
+        .collect::<HashSet<_>>();
 
     return filtered_domains;
 }
