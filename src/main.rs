@@ -14,7 +14,7 @@ async fn main() {
     let mut block_list = black_list
         .difference(&white_list)
         .par_bridge()
-        .map(|x| x.to_string())
+        .cloned()
         .collect::<Vec<_>>();
     block_list.sort();
     println!("Black list size: {}", black_list.len());
