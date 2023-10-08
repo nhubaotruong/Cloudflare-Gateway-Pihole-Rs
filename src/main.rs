@@ -1,11 +1,46 @@
 use futures::future::join_all;
 use rayon::prelude::*;
+use std::thread;
+use std::time::Duration;
+use tokio_uring;
 
 mod cloudflare;
 mod utils;
 
-#[tokio::main]
-async fn main() {
+// #[tokio::main]
+fn main() {
+    let mut retries = 0;
+    loop {
+        match run() {
+            Ok(_) => break,
+            Err(_) => {
+                retries += 1;
+                if retries >= 3 {
+                    eprintln!("Program failed after 3 retries");
+                    break;
+                } else {
+                    eprintln!("Program panicked, retrying in 5 minutes...");
+                    thread::sleep(Duration::from_secs(300));
+                }
+            }
+        }
+    }
+    println!("Done!");
+}
+
+fn run() -> Result<(), ()> {
+    let result = std::panic::catch_unwind(|| {
+        tokio_uring::start(async {
+            exec().await;
+        });
+    });
+    match result {
+        Ok(_) => Ok(()),
+        Err(_) => Err(()),
+    }
+}
+
+async fn exec() {
     let (black_list, white_list) = tokio::join!(
         utils::read_file_content_and_download("lists.txt", false),
         utils::read_file_content_and_download("whitelists.txt", true)
@@ -89,5 +124,5 @@ async fn main() {
         )
         .await;
     }
-    println!("Done!");
+    return;
 }
