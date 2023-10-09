@@ -22,7 +22,7 @@ https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAd
 #https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-YouTube-AdBlock.txt
 https://small.oisd.nl/domainswild2
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/light.txt
-https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+#https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
 https://someonewhocares.org/hosts/zero/hosts
 https://raw.githubusercontent.com/d3ward/toolz/master/src/d3host.txt
 https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/domains.wildcards
@@ -31,7 +31,7 @@ https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts
 https://adaway.org/hosts.txt
 https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts
 https://v.firebog.net/hosts/static/w3kbl.txt
-#https://gitlab.com/ZeroDot1/CoinBlockerLists/-/raw/master/hosts_browser
+https://gitlab.com/ZeroDot1/CoinBlockerLists/-/raw/master/hosts_browser
 https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts
 https://v.firebog.net/hosts/Easylist.txt
 https://v.firebog.net/hosts/AdguardDNS.txt
