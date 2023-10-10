@@ -43,12 +43,28 @@ pub async fn get_cf_lists(prefix: &str) -> Vec<serde_json::Value> {
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in get_cf_lists: {}",
+                    content
+                )
+            })
             .as_array()
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting array from result in get_cf_lists: {}",
+                    content
+                )
+            })
             .par_iter()
             .filter_map(|line| {
-                if line["name"].as_str().unwrap().starts_with(prefix) {
+                if line["name"]
+                    .as_str()
+                    .unwrap_or_else(|| {
+                        panic!("Error getting name from line in get_cf_lists: {}", line)
+                    })
+                    .starts_with(prefix)
+                {
                     Some(line.to_owned())
                 } else {
                     None
@@ -57,7 +73,7 @@ pub async fn get_cf_lists(prefix: &str) -> Vec<serde_json::Value> {
             .collect::<Vec<_>>(),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    content
+    return content;
 }
 
 pub async fn create_cf_list(name: String, domains: Vec<&str>) -> serde_json::Value {
@@ -80,10 +96,18 @@ pub async fn create_cf_list(name: String, domains: Vec<&str>) -> serde_json::Val
         Err(e) => panic!("Error sending request: {}", e),
     };
     let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content.get("result").unwrap().to_owned(),
+        Ok(content) => content
+            .get("result")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in create_cf_list: {}",
+                    content
+                )
+            })
+            .to_owned(),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    content
+    return content;
 }
 
 pub async fn delete_cf_list(id: &str) -> serde_json::Value {
@@ -93,10 +117,18 @@ pub async fn delete_cf_list(id: &str) -> serde_json::Value {
         Err(e) => panic!("Error sending request: {}", e),
     };
     let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content.get("result").unwrap().to_owned(),
+        Ok(content) => content
+            .get("result")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in delete_cf_list: {}",
+                    content
+                )
+            })
+            .to_owned(),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    content
+    return content;
 }
 
 pub async fn get_gateway_policies(prefix: &str) -> Vec<serde_json::Value> {
@@ -108,12 +140,31 @@ pub async fn get_gateway_policies(prefix: &str) -> Vec<serde_json::Value> {
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in get_gateway_policies: {}",
+                    content
+                )
+            })
             .as_array()
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting array from result in get_gateway_policies: {}",
+                    content
+                )
+            })
             .par_iter()
             .filter_map(|line| {
-                if line["name"].as_str().unwrap().starts_with(prefix) {
+                if line["name"]
+                    .as_str()
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Error getting name from line in get_gateway_policies: {}",
+                            line
+                        )
+                    })
+                    .starts_with(prefix)
+                {
                     Some(line.to_owned())
                 } else {
                     None
@@ -151,7 +202,15 @@ pub async fn create_gateway_policy(name: &str, list_ids: Vec<&str>) -> serde_jso
         Err(e) => panic!("Error sending request: {}", e),
     };
     let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content.get("result").unwrap().to_owned(),
+        Ok(content) => content
+            .get("result")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in create_gateway_policy: {}",
+                    content
+                )
+            })
+            .to_owned(),
         Err(e) => panic!("Error reading response: {}", e),
     };
     content
@@ -186,7 +245,15 @@ pub async fn update_gateway_policy(
         Err(e) => panic!("Error sending request: {}", e),
     };
     let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content.get("result").unwrap().to_owned(),
+        Ok(content) => content
+            .get("result")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in update_gateway_policy: {}",
+                    content
+                )
+            })
+            .to_owned(),
         Err(e) => panic!("Error reading response: {}", e),
     };
     content
@@ -194,7 +261,15 @@ pub async fn update_gateway_policy(
 
 pub async fn delete_gateway_policy(prefix: &str) -> i32 {
     let policy_id = match get_gateway_policies(prefix).await.first() {
-        Some(policy) => policy["id"].as_str().unwrap().to_owned(),
+        Some(policy) => policy["id"]
+            .as_str()
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting id from policy in delete_gateway_policy: {}",
+                    policy
+                )
+            })
+            .to_owned(),
         None => return 0,
     };
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules/" + policy_id.as_str();
@@ -203,7 +278,15 @@ pub async fn delete_gateway_policy(prefix: &str) -> i32 {
         Err(e) => panic!("Error sending request: {}", e),
     };
     match resp.json::<serde_json::Value>().await {
-        Ok(content) => content.get("result").unwrap().to_owned(),
+        Ok(content) => content
+            .get("result")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error getting result from response in delete_gateway_policy: {}",
+                    content
+                )
+            })
+            .to_owned(),
         Err(e) => panic!("Error reading response: {}", e),
     };
     1

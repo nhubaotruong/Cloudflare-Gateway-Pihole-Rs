@@ -1,46 +1,34 @@
 use futures::future::join_all;
 use rayon::prelude::*;
+use std::error::Error;
 use std::thread;
 use std::time::Duration;
-use tokio_uring;
 
 mod cloudflare;
 mod utils;
 
-// #[tokio::main]
-fn main() {
+#[tokio::main]
+async fn main() {
     let mut retries = 0;
+    let max_retries = 3;
     loop {
-        match run() {
+        match exec().await {
             Ok(_) => break,
-            Err(_) => {
+            Err(e) => {
+                println!("Error: {}", e);
                 retries += 1;
-                if retries >= 3 {
-                    eprintln!("Program failed after 3 retries");
-                    break;
-                } else {
-                    eprintln!("Program panicked, retrying in 5 minutes...");
-                    thread::sleep(Duration::from_secs(300));
+                if retries > max_retries {
+                    panic!("Failed to update after 3 retries");
                 }
+                println!("Retrying in 5 minutes");
+                thread::sleep(Duration::from_secs(300));
             }
         }
     }
     println!("Done!");
 }
 
-fn run() -> Result<(), ()> {
-    let result = std::panic::catch_unwind(|| {
-        tokio_uring::start(async {
-            exec().await;
-        });
-    });
-    match result {
-        Ok(_) => Ok(()),
-        Err(_) => Err(()),
-    }
-}
-
-async fn exec() {
+async fn exec() -> Result<(), Box<dyn Error>> {
     let (black_list, white_list) = tokio::join!(
         utils::read_file_content_and_download("lists.txt", false),
         utils::read_file_content_and_download("whitelists.txt", true)
@@ -60,7 +48,7 @@ async fn exec() {
     //     Ok(_) => println!("Wrote {} block list to file", block_list.len()),
     //     Err(e) => println!("Error writing block list to file: {}", e),
     // }
-    // return;
+    // return Ok(());
 
     let cf_prefix = "[AdBlock-DNS Block List]";
     let cf_lists = cloudflare::get_cf_lists(cf_prefix).await;
@@ -73,7 +61,7 @@ async fn exec() {
 
     if sum_cf_lists_count == block_list.len() as u64 {
         println!("No need to update.");
-        return;
+        return Ok(());
     }
 
     let policy_prefix = format!("{} Block Ads", cf_prefix);
@@ -124,5 +112,5 @@ async fn exec() {
         )
         .await;
     }
-    return;
+    return Ok(());
 }
