@@ -11,11 +11,24 @@ mod utils;
 async fn main() {
     let mut retries = 0;
     let max_retries = 3;
+    // run 3 times, if panic happens, catch it
     loop {
-        match exec().await {
-            Ok(_) => break,
+        let result = std::panic::catch_unwind(|| async { exec().await });
+        match result {
+            Ok(result) => match result.await {
+                Ok(_) => break,
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    retries += 1;
+                    if retries > max_retries {
+                        panic!("Failed to update after 3 retries");
+                    }
+                    println!("Retrying in 5 minutes");
+                    thread::sleep(Duration::from_secs(300));
+                }
+            },
             Err(e) => {
-                println!("Error: {}", e);
+                println!("Error: {:?}", e);
                 retries += 1;
                 if retries > max_retries {
                     panic!("Failed to update after 3 retries");
