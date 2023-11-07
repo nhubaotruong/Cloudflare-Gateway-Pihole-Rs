@@ -13,7 +13,7 @@ async fn main() {
     let max_retries = 3;
     // run 3 times, if panic happens, catch it
     loop {
-        let result = std::panic::catch_unwind(|| async { exec().await });
+        let result = std::panic::catch_unwind(|| async move { exec().await });
         match result {
             Ok(result) => match result.await {
                 Ok(_) => break,
