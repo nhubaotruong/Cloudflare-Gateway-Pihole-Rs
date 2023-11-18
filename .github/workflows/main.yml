@@ -16,16 +16,40 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download latest build
-        uses: dsaltares/fetch-gh-release-asset@1.1.1
+      # - name: Download latest build
+      #   uses: dsaltares/fetch-gh-release-asset@1.1.1
+      #   with:
+      #     repo: "nhubaotruong/Cloudflare-Gateway-Pihole-Rs"
+      #     file: "cloudflare_gateway_pihole"
+      
+      - name: Setup mold
+        uses: rui314/setup-mold@v1
         with:
-          repo: "nhubaotruong/Cloudflare-Gateway-Pihole-Rs"
-          file: "cloudflare_gateway_pihole"
+          make-default: true
+      
+      - name: Setup rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+
+      - name: Set up cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build
+        run: cargo build --release --locked --target x86_64-unknown-linux-gnu
 
       - name: Run
-        run: |
-          chmod +x cloudflare_gateway_pihole
-          ./cloudflare_gateway_pihole
+        run: cargo run --release --target x86_64-unknown-linux-gnu
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_IDENTIFIER: ${{ secrets.CF_IDENTIFIER }}

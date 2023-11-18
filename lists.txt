@@ -5,6 +5,7 @@ https://raw.githubusercontent.com/luxysiv/hosts/main/hosts.txt
 https://raw.githubusercontent.com/Yhonay/antipopads/master/hosts
 https://abpvn.com/android/abpvn.txt
 https://curbengh.github.io/malware-filter/vn-badsite-filter-domains.txt
+https://curbengh.github.io/malware-filter/phishing-filter-domains.txt
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/alexa
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/huawei
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/roku
@@ -23,10 +24,10 @@ https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAd
 https://small.oisd.nl/domainswild2
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/light.txt
 https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling/hosts
-#https://someonewhocares.org/hosts/zero/hosts
+https://someonewhocares.org/hosts/zero/hosts
 https://raw.githubusercontent.com/d3ward/toolz/master/src/d3host.txt
 #https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/domains.wildcards
-#https://raw.githubusercontent.com/tiuxo/hosts/master/ads
+https://raw.githubusercontent.com/tiuxo/hosts/master/ads
 https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts
 https://adaway.org/hosts.txt
 https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts
@@ -36,9 +37,9 @@ https://v.firebog.net/hosts/static/w3kbl.txt
 https://v.firebog.net/hosts/Easylist.txt
 https://v.firebog.net/hosts/AdguardDNS.txt
 https://v.firebog.net/hosts/Easyprivacy.txt
-#https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
-#https://hostfiles.frogeye.fr/firstparty-trackers.txt
-#https://v.firebog.net/hosts/Prigent-Ads.txt
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
+https://hostfiles.frogeye.fr/firstparty-trackers.txt
+https://v.firebog.net/hosts/Prigent-Ads.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/android-tracking.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/AmazonFireTV.txt

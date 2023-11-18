@@ -1,43 +1,13 @@
 use futures::future::join_all;
 use rayon::prelude::*;
 use std::error::Error;
-use std::thread;
-use std::time::Duration;
 
 mod cloudflare;
 mod utils;
 
 #[tokio::main]
 async fn main() {
-    let mut retries = 0;
-    let max_retries = 3;
-    // run 3 times, if panic happens, catch it
-    loop {
-        let result = std::panic::catch_unwind(|| async move { exec().await });
-        match result {
-            Ok(result) => match result.await {
-                Ok(_) => break,
-                Err(e) => {
-                    println!("Error: {:?}", e);
-                    retries += 1;
-                    if retries > max_retries {
-                        panic!("Failed to update after 3 retries");
-                    }
-                    println!("Retrying in 5 minutes");
-                    thread::sleep(Duration::from_secs(300));
-                }
-            },
-            Err(e) => {
-                println!("Error: {:?}", e);
-                retries += 1;
-                if retries > max_retries {
-                    panic!("Failed to update after 3 retries");
-                }
-                println!("Retrying in 5 minutes");
-                thread::sleep(Duration::from_secs(300));
-            }
-        }
-    }
+    let _ = exec().await;
     println!("Done!");
 }
 
