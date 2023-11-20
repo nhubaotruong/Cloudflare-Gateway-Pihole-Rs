@@ -7,8 +7,10 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    let _ = exec().await;
-    println!("Done!");
+    match exec().await {
+        Ok(_) => println!("Done!"),
+        Err(e) => panic!("Error: {}", e),
+    }
 }
 
 async fn exec() -> Result<(), Box<dyn Error>> {
@@ -77,9 +79,9 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     let new_cf_list = join_all(create_list_tasks).await;
     let new_cf_list_ids = new_cf_list
         .par_iter()
-        .map(|l| l["id"].as_str().unwrap())
+        .filter_map(|l| l["id"].as_str())
         .collect::<Vec<_>>();
-
+    let is_fully_added = new_cf_list.len() == new_cf_list_ids.len();
     let cf_policies = cloudflare::get_gateway_policies(&policy_prefix).await;
     if cf_policies.len() == 0 {
         println!("Creating firewall policy");
@@ -95,5 +97,8 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         )
         .await;
     }
-    return Ok(());
+    if is_fully_added {
+        return Ok(());
+    }
+    return Err("Not all lists are added".into());
 }
