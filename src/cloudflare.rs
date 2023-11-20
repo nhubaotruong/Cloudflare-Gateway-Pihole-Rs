@@ -1,5 +1,8 @@
 use once_cell::sync::Lazy;
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use rayon::{
+    iter::IntoParallelIterator,
+    prelude::{IntoParallelRefIterator, ParallelIterator},
+};
 use reqwest::{header, Client, ClientBuilder};
 use serde_json;
 
@@ -34,49 +37,32 @@ static CLIENT: Lazy<Client> = Lazy::new(|| {
     }
 });
 
-pub async fn get_cf_lists(prefix: &str) -> Vec<serde_json::Value> {
+pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists";
     let resp = match CLIENT.get(&url).send().await {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
-    let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content
-            .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in get_cf_lists: {}",
-                    content
-                )
-            })
-            .as_array()
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting array from result in get_cf_lists: {}",
-                    content
-                )
-            })
-            .par_iter()
-            .filter_map(|line| {
-                if line["name"]
-                    .as_str()
-                    .unwrap_or_else(|| {
-                        panic!("Error getting name from line in get_cf_lists: {}", line)
-                    })
-                    .starts_with(prefix)
-                {
-                    Some(line.to_owned())
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>(),
-        Err(e) => panic!("Error reading response: {}", e),
-    };
+    let content =
+        match resp.json::<serde_json::Value>().await {
+            Ok(content) => content
+                .get("result")
+                .and_then(|result| result.as_array())
+                .and_then(|result_array| {
+                    Some(result_array.into_par_iter().filter_map(
+                        |line| match line["name"].as_str() {
+                            Some(name) if name.starts_with(prefix) => Some(line.to_owned()),
+                            _ => None,
+                        },
+                    ))
+                })
+                .and_then(|result| Some(result.collect::<Vec<_>>())),
+            Err(e) => panic!("Error reading response: {}", e),
+        };
     return content;
 }
 
-pub async fn create_cf_list(name: String, domains: Vec<&str>) -> serde_json::Value {
+pub async fn create_cf_list(name: String, domains: Vec<&str>) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists";
     let resp = match CLIENT
         .post(&url)
@@ -98,19 +84,13 @@ pub async fn create_cf_list(name: String, domains: Vec<&str>) -> serde_json::Val
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in create_cf_list: {}",
-                    content
-                )
-            })
-            .to_owned(),
+            .and_then(|result| Some(result.to_owned())),
         Err(e) => panic!("Error reading response: {}", e),
     };
     return content;
 }
 
-pub async fn delete_cf_list(id: &str) -> serde_json::Value {
+pub async fn delete_cf_list(id: &str) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists/" + id;
     let resp = match CLIENT.delete(&url).send().await {
         Ok(resp) => resp,
@@ -119,64 +99,38 @@ pub async fn delete_cf_list(id: &str) -> serde_json::Value {
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in delete_cf_list: {}",
-                    content
-                )
-            })
-            .to_owned(),
+            .and_then(|result| Some(result.to_owned())),
         Err(e) => panic!("Error reading response: {}", e),
     };
     return content;
 }
 
-pub async fn get_gateway_policies(prefix: &str) -> Vec<serde_json::Value> {
+pub async fn get_gateway_policies(prefix: &str) -> Option<Vec<serde_json::Value>> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules";
     let resp = match CLIENT.get(&url).send().await {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
-    let content = match resp.json::<serde_json::Value>().await {
-        Ok(content) => content
-            .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in get_gateway_policies: {}",
-                    content
-                )
-            })
-            .as_array()
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting array from result in get_gateway_policies: {}",
-                    content
-                )
-            })
-            .par_iter()
-            .filter_map(|line| {
-                if line["name"]
-                    .as_str()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Error getting name from line in get_gateway_policies: {}",
-                            line
-                        )
-                    })
-                    .starts_with(prefix)
-                {
-                    Some(line.to_owned())
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>(),
-        Err(e) => panic!("Error reading response: {}", e),
-    };
-    content
+    let content =
+        match resp.json::<serde_json::Value>().await {
+            Err(e) => panic!("Error reading response: {}", e),
+            Ok(content) => content
+                .get("result")
+                .and_then(|result| result.as_array())
+                .and_then(|result_array| {
+                    Some(result_array.into_par_iter().filter_map(
+                        |line| match line["name"].as_str() {
+                            Some(name) if name.starts_with(prefix) => Some(line.to_owned()),
+                            _ => None,
+                        },
+                    ))
+                })
+                .and_then(|result| Some(result.collect::<Vec<_>>())),
+        };
+    return content;
 }
 
-pub async fn create_gateway_policy(name: &str, list_ids: Vec<&str>) -> serde_json::Value {
+pub async fn create_gateway_policy(name: &str, list_ids: Vec<String>) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules";
     let resp = match CLIENT
         .post(&url)
@@ -204,23 +158,17 @@ pub async fn create_gateway_policy(name: &str, list_ids: Vec<&str>) -> serde_jso
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in create_gateway_policy: {}",
-                    content
-                )
-            })
-            .to_owned(),
+            .and_then(|result| Some(result.to_owned())),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    content
+    return content;
 }
 
 pub async fn update_gateway_policy(
     name: &str,
     policy_id: &str,
-    list_ids: Vec<&str>,
-) -> serde_json::Value {
+    list_ids: Vec<String>,
+) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules/" + policy_id;
     let resp = match CLIENT
         .put(&url)
@@ -247,32 +195,26 @@ pub async fn update_gateway_policy(
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in update_gateway_policy: {}",
-                    content
-                )
-            })
-            .to_owned(),
+            .and_then(|result| Some(result.to_owned())),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    content
+    return content;
 }
 
 pub async fn delete_gateway_policy(prefix: &str) -> i32 {
-    let policy_id = match get_gateway_policies(prefix).await.first() {
-        Some(policy) => policy["id"]
-            .as_str()
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting id from policy in delete_gateway_policy: {}",
-                    policy
-                )
-            })
-            .to_owned(),
+    let policies = match get_gateway_policies(prefix).await {
+        Some(policies) => policies,
         None => return 0,
     };
-    let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules/" + policy_id.as_str();
+    let policy_id = match policies.first() {
+        Some(policy) => policy["id"].as_str().and_then(|x| Some(x.to_owned())),
+        None => return 0,
+    };
+    let policy_id_str = match policy_id {
+        Some(policy_id) => policy_id,
+        None => return 0,
+    };
+    let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules/" + &policy_id_str;
     let resp = match CLIENT.delete(&url).send().await {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
@@ -280,14 +222,8 @@ pub async fn delete_gateway_policy(prefix: &str) -> i32 {
     match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
-            .unwrap_or_else(|| {
-                panic!(
-                    "Error getting result from response in delete_gateway_policy: {}",
-                    content
-                )
-            })
-            .to_owned(),
+            .and_then(|result| Some(result.to_owned())),
         Err(e) => panic!("Error reading response: {}", e),
     };
-    1
+    return 1;
 }
