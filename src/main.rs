@@ -90,13 +90,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     let new_cf_list = join_all(create_list_tasks).await;
     let new_cf_list_ids = new_cf_list
         .par_iter()
-        .map(|l| l.to_owned())
-        .filter_map(|l2| {
-            l2?.get("result")
-                .and_then(|r| r.get("id"))
-                .and_then(|id| id.as_str())
-                .map(|id| id.to_owned())
-        })
+        .filter_map(|l| Some(l.to_owned()?.get("id")?.as_str()?.to_owned()))
         .collect::<Vec<_>>();
 
     let expected_cf_list_count = new_cf_list.len();
