@@ -10,7 +10,7 @@ jobs:
   run:
     name: Cloudflare Gateway
     permissions: write-all
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
