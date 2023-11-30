@@ -26,7 +26,7 @@ https://big.oisd.nl/domainswild2
 https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling/hosts
 https://someonewhocares.org/hosts/zero/hosts
 https://raw.githubusercontent.com/d3ward/toolz/master/src/d3host.txt
-#https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/domains.wildcards
+https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/domains.wildcards
 https://raw.githubusercontent.com/tiuxo/hosts/master/ads
 https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts
 https://adaway.org/hosts.txt
