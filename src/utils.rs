@@ -12,7 +12,7 @@ pub async fn read_file_content_and_download(name: &str, skip_filter: bool) -> Ha
     return content;
 }
 
-async fn read_file_content(name: &str) -> Vec<String> {
+pub async fn read_file_content(name: &str) -> Vec<String> {
     let content = match read_to_string(name).await {
         Ok(content) => content
             .par_lines()
@@ -129,7 +129,7 @@ static IP_PATTERN: Lazy<Regex> =
         },
     );
 
-fn filter_domain(line: &str) -> Option<String> {
+pub fn filter_domain(line: &str) -> Option<String> {
     let domain = line.trim();
     if domain.starts_with('#')
         || domain.starts_with('!')
