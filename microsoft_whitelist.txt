@@ -8,6 +8,8 @@ officecdn-microsoft-com.akamaized.net
 packages.microsoft.com
 unitedstates.x.cp.wd.microsoft.com
 us-v20.events.data.microsoft.com
+us4-v20.events.data.microsoft.com
+us5-v20.events.data.microsoft.com
 winatp-gw-cus.microsoft.com
 winatp-gw-eus.microsoft.com
 winatp-gw-cus3.microsoft.com
