@@ -17,7 +17,7 @@ async fn main() {
 
 async fn exec() -> Result<(), Box<dyn Error>> {
     let (black_list, white_list) = tokio::join!(
-        utils::read_file_content_and_download("lists.txt", false),
+        utils::read_file_content_and_download("lists.txt", true),
         utils::read_file_content_and_download("whitelists.txt", true)
     );
 

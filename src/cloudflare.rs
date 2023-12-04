@@ -142,7 +142,7 @@ pub async fn create_gateway_policy(name: &str, list_ids: Vec<String>) -> Option<
             "filters": ["dns"],
             "traffic": list_ids
                 .par_iter()
-                .map(|l| format!("dns.domains[*] in ${}", l))
+                .map(|l| format!("any(dns.domains[*] in ${})", l))
                 .collect::<Vec<_>>()
                 .join(" or "),
             "rule_settings": {
