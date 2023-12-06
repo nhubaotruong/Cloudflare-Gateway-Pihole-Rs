@@ -50,11 +50,10 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
         return filtered_content;
     }
 
-    // let filtered_domains = filtered_content
-    //     .par_iter()
-    //     .map(|x| x.trim_start_matches("www.").to_string())
-    //     .collect::<HashSet<_>>();
+    return filter_subdomain(filtered_content);
+}
 
+fn filter_subdomain(filtered_content: HashSet<String>) -> HashSet<String> {
     let mut domain_map: HashMap<String, HashSet<String>> = HashMap::new();
 
     for domain in &filtered_content {
@@ -92,7 +91,6 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
         })
         .flatten()
         .collect::<HashSet<_>>();
-
     return filtered_domains;
 }
 
