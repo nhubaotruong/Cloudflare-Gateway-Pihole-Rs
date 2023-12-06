@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use regex::Regex;
 use reqwest::Client;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 
 pub async fn read_file_content_and_download(name: &str, skip_filter: bool) -> HashSet<String> {
@@ -50,43 +50,48 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
         return filtered_content;
     }
 
-    let filtered_domains = filtered_content
-        .par_iter()
-        .map(|x| x.trim_start_matches("www.").to_string())
-        .collect::<HashSet<_>>();
-
-    // let mut domain_map: HashMap<String, HashSet<String>> = HashMap::new();
-
-    // for domain in &filtered_content {
-    //     let splitted = domain.split('.').collect::<Vec<_>>();
-    //     if splitted.len() <= 1 {
-    //         continue;
-    //     }
-    //     let domain_part = splitted[splitted.len() - 2..].join(".");
-    //     domain_map
-    //         .entry(domain_part)
-    //         .or_insert(HashSet::new())
-    //         .insert(domain.to_string());
-    // }
-
-    // let filtered_domains = domain_map
+    // let filtered_domains = filtered_content
     //     .par_iter()
-    //     .filter_map(|(domain_part, domain_names)| {
-    //         if domain_names.contains(domain_part)
-    //             || domain_names.contains(&format!("www.{}", domain_part))
-    //         {
-    //             Some(
-    //                 [domain_part.to_string()]
-    //                     .iter()
-    //                     .cloned()
-    //                     .collect::<HashSet<_>>(),
-    //             )
-    //         } else {
-    //             Some(domain_names.par_iter().cloned().collect::<HashSet<_>>())
-    //         }
-    //     })
-    //     .flatten()
+    //     .map(|x| x.trim_start_matches("www.").to_string())
     //     .collect::<HashSet<_>>();
+
+    let mut domain_map: HashMap<String, HashSet<String>> = HashMap::new();
+
+    for domain in &filtered_content {
+        let splitted = domain.split('.').collect::<Vec<_>>();
+        if splitted.len() <= 1 {
+            continue;
+        }
+        let domain_part = splitted[splitted.len() - 2..].join(".");
+        domain_map
+            .entry(domain_part)
+            .or_insert(HashSet::new())
+            .insert(domain.to_string());
+    }
+
+    let filtered_domains = domain_map
+        .par_iter()
+        .filter_map(|(domain_part, domain_names)| {
+            if domain_names.contains(domain_part)
+                || domain_names.contains(&format!("www.{}", domain_part))
+            {
+                Some(
+                    [domain_part.to_string()]
+                        .iter()
+                        .cloned()
+                        .collect::<HashSet<_>>(),
+                )
+            } else {
+                Some(
+                    domain_names
+                        .par_iter()
+                        .map(|l| l.trim_start_matches("www.").to_string())
+                        .collect::<HashSet<_>>(),
+                )
+            }
+        })
+        .flatten()
+        .collect::<HashSet<_>>();
 
     return filtered_domains;
 }
