@@ -38,11 +38,7 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
     let content: Vec<String> = join_all(tasks).await.par_iter().cloned().collect();
     let filtered_content: HashSet<String> = content
         .par_iter()
-        .map(|text| {
-            text.split("\n")
-                .par_bridge()
-                .filter_map(|x| filter_domain(&x))
-        })
+        .map(|text| text.par_lines().filter_map(|x| filter_domain(&x)))
         .flatten()
         .collect();
 
