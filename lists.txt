@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/android-tracki
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/AmazonFireTV.txt
 https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
-https://raw.githubusercontent.com/anudeepND/blacklist/master/facebook.txt
+#https://raw.githubusercontent.com/anudeepND/blacklist/master/facebook.txt
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/native.amazon.txt
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/native.apple.txt
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/native.huawei.txt
