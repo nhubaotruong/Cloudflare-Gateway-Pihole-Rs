@@ -35,12 +35,16 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
         .par_iter()
         .map(|url| download_content(url, &client))
         .collect::<Vec<_>>();
-    let content: Vec<String> = join_all(tasks).await.par_iter().cloned().collect();
-    let filtered_content: HashSet<String> = content
+    let content = join_all(tasks)
+        .await
+        .par_iter()
+        .cloned()
+        .collect::<Vec<_>>();
+    let filtered_content = content
         .par_iter()
         .map(|text| text.par_lines().filter_map(|x| filter_domain(&x)))
         .flatten()
-        .collect();
+        .collect::<HashSet<_>>();
 
     if skip_filter {
         return filtered_content;

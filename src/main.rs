@@ -1,7 +1,12 @@
+#[cfg(not(target_env = "msvc"))]
+use tikv_jemallocator::Jemalloc;
+
+#[cfg(not(target_env = "msvc"))]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 use futures::future::join_all;
-use itertools::Itertools;
 use rayon::prelude::*;
-use std::collections::HashSet;
 use std::error::Error;
 
 mod cloudflare;
@@ -21,30 +26,8 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         utils::read_file_content_and_download("whitelists.txt", true)
     );
 
-    // Custom microsoft whitelist
-    let microsoft_whitelist = utils::read_file_content("microsoft_whitelist.txt")
-        .await
-        .par_iter()
-        .filter_map(|line| utils::filter_domain(line))
-        .collect::<HashSet<_>>();
-
-    let combined_white_list = white_list
-        .par_iter()
-        .chain(microsoft_whitelist.par_iter())
-        .cloned()
-        .collect::<HashSet<_>>();
-
-    let unsorted_block_list = black_list
-        .difference(&combined_white_list)
-        .par_bridge()
-        .cloned()
-        .collect::<Vec<_>>();
-
-    let sorted_block_list = unsorted_block_list
-        .iter()
-        .sorted()
-        .cloned()
-        .collect::<Vec<_>>();
+    let mut sorted_block_list = black_list.difference(&white_list).collect::<Vec<_>>();
+    sorted_block_list.par_sort();
 
     println!("Black list size: {}", black_list.len());
     println!("White list size: {}", white_list.len());
@@ -104,7 +87,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         .map(|(i, chunk)| {
             let name = format!("{cf_prefix} {i}");
             println!("Creating list {name}");
-            let chunk_str_refs: Vec<&str> = chunk.par_iter().map(|s| s.as_str()).collect();
+            let chunk_str_refs = chunk.par_iter().map(|&s| s).collect::<Vec<_>>();
             cloudflare::create_cf_list(name, chunk_str_refs)
         })
         .collect::<Vec<_>>();

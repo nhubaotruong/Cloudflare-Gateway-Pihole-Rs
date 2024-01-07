@@ -62,7 +62,7 @@ pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
     return content;
 }
 
-pub async fn create_cf_list(name: String, domains: Vec<&str>) -> Option<serde_json::Value> {
+pub async fn create_cf_list(name: String, domains: Vec<&String>) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists";
     let resp = match CLIENT
         .post(&url)
