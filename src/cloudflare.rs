@@ -1,8 +1,4 @@
 use once_cell::sync::Lazy;
-use rayon::{
-    iter::IntoParallelIterator,
-    prelude::{IntoParallelRefIterator, ParallelIterator},
-};
 use reqwest::{header, Client, ClientBuilder};
 use serde_json;
 
@@ -43,22 +39,23 @@ pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
-    let content =
-        match resp.json::<serde_json::Value>().await {
-            Ok(content) => content
-                .get("result")
-                .and_then(|result| result.as_array())
-                .and_then(|result_array| {
-                    Some(result_array.into_par_iter().filter_map(
-                        |line| match line["name"].as_str() {
+    let content = match resp.json::<serde_json::Value>().await {
+        Ok(content) => content
+            .get("result")
+            .and_then(|result| result.as_array())
+            .and_then(|result_array| {
+                Some(
+                    result_array
+                        .iter()
+                        .filter_map(|line| match line["name"].as_str() {
                             Some(name) if name.starts_with(prefix) => Some(line.to_owned()),
                             _ => None,
-                        },
-                    ))
-                })
-                .and_then(|result| Some(result.collect::<Vec<_>>())),
-            Err(e) => panic!("Error reading response: {}", e),
-        };
+                        }),
+                )
+            })
+            .and_then(|result| Some(result.collect::<Vec<_>>())),
+        Err(e) => panic!("Error reading response: {}", e),
+    };
     return content;
 }
 
@@ -71,7 +68,7 @@ pub async fn create_cf_list(name: String, domains: Vec<&String>) -> Option<serde
             "description": "Created by script.",
             "type": "DOMAIN",
             "items": domains
-                .par_iter()
+                .iter()
                 .map(|d| serde_json::json!({"value": d}))
                 .collect::<Vec<_>>(),
         }))
@@ -111,22 +108,23 @@ pub async fn get_gateway_policies(prefix: &str) -> Option<Vec<serde_json::Value>
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
-    let content =
-        match resp.json::<serde_json::Value>().await {
-            Err(e) => panic!("Error reading response: {}", e),
-            Ok(content) => content
-                .get("result")
-                .and_then(|result| result.as_array())
-                .and_then(|result_array| {
-                    Some(result_array.into_par_iter().filter_map(
-                        |line| match line["name"].as_str() {
+    let content = match resp.json::<serde_json::Value>().await {
+        Err(e) => panic!("Error reading response: {}", e),
+        Ok(content) => content
+            .get("result")
+            .and_then(|result| result.as_array())
+            .and_then(|result_array| {
+                Some(
+                    result_array
+                        .iter()
+                        .filter_map(|line| match line["name"].as_str() {
                             Some(name) if name.starts_with(prefix) => Some(line.to_owned()),
                             _ => None,
-                        },
-                    ))
-                })
-                .and_then(|result| Some(result.collect::<Vec<_>>())),
-        };
+                        }),
+                )
+            })
+            .and_then(|result| Some(result.collect::<Vec<_>>())),
+    };
     return content;
 }
 
@@ -141,7 +139,7 @@ pub async fn create_gateway_policy(name: &str, list_ids: Vec<String>) -> Option<
             "enabled": true,
             "filters": ["dns"],
             "traffic": list_ids
-                .par_iter()
+                .iter()
                 .map(|l| format!("any(dns.domains[*] in ${})", l))
                 .collect::<Vec<_>>()
                 .join(" or "),
@@ -178,7 +176,7 @@ pub async fn update_gateway_policy(
             "enabled": true,
             "filters": ["dns"],
             "traffic": list_ids
-                .par_iter()
+                .iter()
                 .map(|l| format!("any(dns.domains[*] in ${})", l))
                 .collect::<Vec<_>>()
                 .join(" or "),

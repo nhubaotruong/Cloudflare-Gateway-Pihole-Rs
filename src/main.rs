@@ -6,7 +6,7 @@ use tikv_jemallocator::Jemalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 
 use futures::future::join_all;
-use rayon::prelude::*;
+use itertools::Itertools;
 use std::error::Error;
 
 mod cloudflare;
@@ -27,13 +27,13 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     );
 
     let mut sorted_block_list = black_list.difference(&white_list).collect::<Vec<_>>();
-    sorted_block_list.par_sort();
+    sorted_block_list.sort();
 
     println!("Black list size: {}", black_list.len());
     println!("White list size: {}", white_list.len());
     println!("Block list size: {}", sorted_block_list.len());
 
-    // match tokio::fs::write("block_list.txt", sorted_block_list.join("\n")).await {
+    // match tokio::fs::write("block_list.txt", sorted_block_list.iter().join("\n")).await {
     //     Ok(_) => println!("Wrote {} block list to file", sorted_block_list.len()),
     //     Err(e) => println!("Error writing block list to file: {}", e),
     // }
@@ -50,7 +50,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     println!("Cloudflare list size: {}", cf_lists.len());
 
     let sum_cf_lists_count = cf_lists
-        .par_iter()
+        .iter()
         .filter_map(|list| list["count"].as_u64())
         .sum::<u64>();
 
@@ -65,7 +65,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
 
     // Delete all lists parallely tokio
     let delete_list_tasks = cf_lists
-        .par_iter()
+        .iter()
         .filter_map(|list| {
             let name = list["name"].as_str();
             let id = list["id"].as_str();
@@ -82,18 +82,18 @@ async fn exec() -> Result<(), Box<dyn Error>> {
 
     // Create cf list by chunk of 1000 with name containing incremental number
     let create_list_tasks = sorted_block_list
-        .par_chunks(1000)
+        .chunks(1000)
         .enumerate()
         .map(|(i, chunk)| {
             let name = format!("{cf_prefix} {i}");
             println!("Creating list {name}");
-            let chunk_str_refs = chunk.par_iter().map(|&s| s).collect::<Vec<_>>();
+            let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
             cloudflare::create_cf_list(name, chunk_str_refs)
         })
         .collect::<Vec<_>>();
     let new_cf_list = join_all(create_list_tasks).await;
     let new_cf_list_ids = new_cf_list
-        .par_iter()
+        .iter()
         .filter_map(|l| Some(l.to_owned()?.get("id")?.as_str()?.to_owned()))
         .collect::<Vec<_>>();
 
