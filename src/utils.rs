@@ -18,10 +18,9 @@ pub async fn read_file_content(name: &str) -> Vec<String> {
             .lines()
             .filter_map(|line| {
                 if line.starts_with('#') {
-                    None
-                } else {
-                    Some(line.to_string())
+                    return None;
                 }
+                return Some(line.to_string());
             })
             .collect::<Vec<_>>(),
         Err(e) => panic!("Error reading file: {}", e),
