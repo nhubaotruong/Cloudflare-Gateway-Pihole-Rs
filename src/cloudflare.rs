@@ -128,7 +128,10 @@ pub async fn get_gateway_policies(prefix: &str) -> Option<Vec<serde_json::Value>
     return content;
 }
 
-pub async fn create_gateway_policy(name: &str, list_ids: Vec<String>) -> Option<serde_json::Value> {
+pub async fn create_gateway_policy(
+    name: &str,
+    list_ids: &Vec<String>,
+) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules";
     let resp = match CLIENT
         .post(&url)
@@ -165,7 +168,7 @@ pub async fn create_gateway_policy(name: &str, list_ids: Vec<String>) -> Option<
 pub async fn update_gateway_policy(
     name: &str,
     policy_id: &str,
-    list_ids: Vec<String>,
+    list_ids: &Vec<String>,
 ) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules/" + policy_id;
     let resp = match CLIENT

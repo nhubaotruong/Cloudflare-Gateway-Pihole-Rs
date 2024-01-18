@@ -7,8 +7,8 @@ use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 
 pub async fn read_file_content_and_download(name: &str, skip_filter: bool) -> HashSet<String> {
-    let urls = read_file_content(name).await;
-    let content = get_content_from_urls(urls, skip_filter).await;
+    let urls = read_file_content(&name).await;
+    let content = get_content_from_urls(&urls, &skip_filter).await;
     return content;
 }
 
@@ -28,11 +28,11 @@ pub async fn read_file_content(name: &str) -> Vec<String> {
     return content;
 }
 
-async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<String> {
+async fn get_content_from_urls(urls: &Vec<String>, skip_filter: &bool) -> HashSet<String> {
     let client = Client::new();
     let tasks = urls
         .iter()
-        .map(|url| download_content(url, &client))
+        .map(|url| download_content(&url, &client))
         .collect::<Vec<_>>();
     let content = join_all(tasks)
         .await
@@ -42,17 +42,17 @@ async fn get_content_from_urls(urls: Vec<String>, skip_filter: bool) -> HashSet<
         .filter_map(filter_domain)
         .collect::<HashSet<_>>();
 
-    if skip_filter {
+    if *skip_filter {
         return content;
     }
 
-    return filter_subdomain(content);
+    return filter_subdomain(&content);
 }
 
-fn filter_subdomain(filtered_content: HashSet<String>) -> HashSet<String> {
+fn filter_subdomain(filtered_content: &HashSet<String>) -> HashSet<String> {
     let mut domain_map: HashMap<Cow<String>, HashSet<Cow<String>>> = HashMap::new();
 
-    for domain in &filtered_content {
+    for domain in filtered_content {
         let splitted = domain.split('.').collect::<Vec<_>>();
         if splitted.len() <= 1 {
             continue;

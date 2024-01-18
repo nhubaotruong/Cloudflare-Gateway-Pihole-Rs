@@ -88,13 +88,13 @@ async fn exec() -> Result<(), Box<dyn Error>> {
             let name = format!("{cf_prefix} {i}");
             println!("Creating list {name}");
             let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
-            cloudflare::create_cf_list(name, chunk_str_refs)
+            return cloudflare::create_cf_list(name, chunk_str_refs);
         })
         .collect::<Vec<_>>();
     let new_cf_list = join_all(create_list_tasks).await;
     let new_cf_list_ids = new_cf_list
         .iter()
-        .filter_map(|l| Some(l.to_owned()?.get("id")?.as_str()?.to_owned()))
+        .filter_map(|l| Some(l.as_ref()?.get("id")?.as_str()?.to_owned()))
         .collect::<Vec<_>>();
 
     let expected_cf_list_count = new_cf_list.len();
@@ -109,7 +109,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     };
     if cf_policies.len() == 0 {
         println!("Creating firewall policy");
-        cloudflare::create_gateway_policy(&policy_prefix, new_cf_list_ids).await;
+        cloudflare::create_gateway_policy(&policy_prefix, &new_cf_list_ids).await;
     } else if cf_policies.len() != 1 {
         println!("More than one firewall policy found");
     } else {
@@ -117,7 +117,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         let cf_policy_id = cf_policies.first().and_then(|policy| policy["id"].as_str());
         match cf_policy_id {
             Some(cf_policy_id) => {
-                cloudflare::update_gateway_policy(&policy_prefix, cf_policy_id, new_cf_list_ids)
+                cloudflare::update_gateway_policy(&policy_prefix, &cf_policy_id, &new_cf_list_ids)
                     .await;
             }
             None => {
