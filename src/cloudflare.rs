@@ -12,17 +12,13 @@ static CF_IDENTIFIER: Lazy<String> = Lazy::new(|| match std::env::var("CF_IDENTI
     Err(e) => panic!("Missing Cloudflare identifier: {}", e),
 });
 
-static CLOUDFLARE_API_URL: Lazy<String> = Lazy::new(|| {
-    format!(
-        "https://api.cloudflare.com/client/v4/accounts/{:?}",
-        CF_IDENTIFIER
-    )
-});
+static CLOUDFLARE_API_URL: Lazy<String> =
+    Lazy::new(|| "https://api.cloudflare.com/client/v4/accounts/".to_owned() + &CF_IDENTIFIER);
 
 // Create a static client to reuse the connection, with default header
 static CLIENT: Lazy<Client> = Lazy::new(|| {
     let mut headers = header::HeaderMap::new();
-    let auth_header_value_str = format!("Bearer {:?}", CF_API_TOKEN);
+    let auth_header_value_str = "Bearer ".to_owned() + CF_API_TOKEN.as_str();
     let auth_header_value = match header::HeaderValue::from_str(&auth_header_value_str) {
         Ok(value) => value,
         Err(e) => panic!("Error creating authorization header value: {}", e),
