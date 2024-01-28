@@ -67,15 +67,13 @@ fn filter_subdomain(filtered_content: &HashSet<String>) -> HashSet<String> {
     let filtered_domains = domain_map
         .iter()
         .filter_map(|(domain_part, domain_names)| {
-            if domain_names.contains(domain_part)
-                || domain_names.contains(&Cow::Borrowed(&format!("www.{}", domain_part)))
-            {
+            if domain_names.contains(domain_part) {
                 Some(HashSet::from([domain_part.to_string()]))
             } else {
                 Some(
                     domain_names
                         .iter()
-                        .map(|l| l.trim_start_matches("www.").to_string())
+                        .map(|l| l.to_string())
                         .collect::<HashSet<_>>(),
                 )
             }
@@ -154,7 +152,8 @@ fn filter_domain(line: &str) -> Option<String> {
             } else {
                 Some(x)
             }
-        });
+        })
+        .and_then(|x| Some(x.trim_start_matches("www.").to_string()));
 
     return domain;
 }
