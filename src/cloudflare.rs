@@ -1,6 +1,7 @@
 use once_cell::sync::Lazy;
-use reqwest::{header, Client, ClientBuilder};
+use reqwest::{header, Client};
 use serde_json;
+use std::time::Duration;
 
 static CF_API_TOKEN: Lazy<String> = Lazy::new(|| match std::env::var("CF_API_TOKEN") {
     Ok(token) => token,
@@ -27,7 +28,23 @@ static CLIENT: Lazy<Client> = Lazy::new(|| {
         header::AUTHORIZATION,
         header::HeaderValue::from(auth_header_value),
     );
-    match ClientBuilder::new().default_headers(headers).build() {
+    headers.insert(
+        header::CONNECTION,
+        header::HeaderValue::from_static("keep-alive"),
+    );
+    headers.insert(
+        header::ACCEPT_ENCODING,
+        header::HeaderValue::from_static("gzip, deflate, br"),
+    );
+    match Client::builder()
+        .default_headers(headers)
+        .pool_idle_timeout(Some(Duration::from_secs(600)))
+        .tcp_keepalive(Some(Duration::from_secs(60)))
+        .gzip(true)
+        .brotli(true)
+        .deflate(true)
+        .build()
+    {
         Ok(client) => client,
         Err(e) => panic!("Error creating client: {}", e),
     }

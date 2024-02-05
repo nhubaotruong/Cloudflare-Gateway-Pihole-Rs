@@ -40,13 +40,9 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     // return Ok(());
 
     let cf_prefix = "[AdBlock-DNS Block List]";
-    let cf_lists = match cloudflare::get_cf_lists(cf_prefix).await {
-        Some(cf_lists) => cf_lists,
-        None => {
-            println!("No cloudflare list found");
-            return Ok(());
-        }
-    };
+    let cf_lists = cloudflare::get_cf_lists(cf_prefix)
+        .await
+        .unwrap_or(Vec::<serde_json::Value>::new());
     println!("Cloudflare list size: {}", cf_lists.len());
 
     let sum_cf_lists_count = cf_lists

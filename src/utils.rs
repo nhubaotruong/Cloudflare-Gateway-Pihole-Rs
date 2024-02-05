@@ -1,7 +1,9 @@
 use futures::future::join_all;
 use once_cell::sync::Lazy;
+use std::time::Duration;
+
 use regex::Regex;
-use reqwest::Client;
+use reqwest::{header, Client};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
@@ -28,11 +30,28 @@ pub async fn read_file_content(name: &str) -> Vec<String> {
     return content;
 }
 
+static CLIENT: Lazy<Client> = Lazy::new(|| {
+    let mut headers = header::HeaderMap::new();
+    headers.insert(
+        header::ACCEPT_ENCODING,
+        header::HeaderValue::from_static("gzip, deflate, br"),
+    );
+    let client = Client::builder()
+        .default_headers(headers)
+        .pool_idle_timeout(Some(Duration::from_secs(600)))
+        .tcp_keepalive(Some(Duration::from_secs(60)))
+        .gzip(true)
+        .brotli(true)
+        .deflate(true)
+        .build()
+        .unwrap();
+    return client;
+});
+
 async fn get_content_from_urls(urls: &Vec<String>, skip_filter: &bool) -> HashSet<String> {
-    let client = Client::new();
     let tasks = urls
         .iter()
-        .map(|url| download_content(&url, &client))
+        .map(|url| download_content(&url))
         .collect::<Vec<_>>();
     let content = join_all(tasks)
         .await
@@ -83,8 +102,8 @@ fn filter_subdomain(filtered_content: &HashSet<String>) -> HashSet<String> {
     return filtered_domains;
 }
 
-async fn download_content(url: &str, client: &Client) -> String {
-    let resp = match client.get(url).send().await {
+async fn download_content(url: &str) -> String {
+    let resp = match CLIENT.get(url).send().await {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
