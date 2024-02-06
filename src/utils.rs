@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use std::time::Duration;
 
 use regex::Regex;
-use reqwest::{header, Client};
+use reqwest::Client;
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
@@ -31,18 +31,9 @@ pub async fn read_file_content(name: &str) -> Vec<String> {
 }
 
 static CLIENT: Lazy<Client> = Lazy::new(|| {
-    let mut headers = header::HeaderMap::new();
-    headers.insert(
-        header::ACCEPT_ENCODING,
-        header::HeaderValue::from_static("gzip, deflate, br"),
-    );
     let client = Client::builder()
-        .default_headers(headers)
         .pool_idle_timeout(Some(Duration::from_secs(600)))
         .tcp_keepalive(Some(Duration::from_secs(60)))
-        .gzip(true)
-        .brotli(true)
-        .deflate(true)
         .build()
         .unwrap();
     return client;

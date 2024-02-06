@@ -32,17 +32,10 @@ static CLIENT: Lazy<Client> = Lazy::new(|| {
         header::CONNECTION,
         header::HeaderValue::from_static("keep-alive"),
     );
-    headers.insert(
-        header::ACCEPT_ENCODING,
-        header::HeaderValue::from_static("gzip, deflate, br"),
-    );
     match Client::builder()
         .default_headers(headers)
         .pool_idle_timeout(Some(Duration::from_secs(600)))
         .tcp_keepalive(Some(Duration::from_secs(60)))
-        .gzip(true)
-        .brotli(true)
-        .deflate(true)
         .build()
     {
         Ok(client) => client,
