@@ -4,6 +4,7 @@ use mimalloc::MiMalloc;
 static GLOBAL: MiMalloc = MiMalloc;
 
 use futures::future::join_all;
+// use itertools::Itertools;
 use std::error::Error;
 
 mod cloudflare;
@@ -11,9 +12,18 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    match exec().await {
-        Ok(_) => println!("Done!"),
-        Err(e) => panic!("Error: {}", e),
+    let mut is_done = false;
+    while !is_done {
+        match exec().await {
+            Ok(_) => {
+                println!("Done!");
+                is_done = true;
+            }
+            Err(e) => {
+                println!("Error: {}", e);
+                tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
+            }
+        }
     }
 }
 
