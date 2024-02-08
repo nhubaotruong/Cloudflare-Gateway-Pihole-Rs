@@ -1,8 +1,3 @@
-use mimalloc::MiMalloc;
-
-#[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
-
 use futures::future::join_all;
 // use itertools::Itertools;
 use std::error::Error;
