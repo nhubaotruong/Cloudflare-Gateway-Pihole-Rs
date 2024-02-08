@@ -1,5 +1,5 @@
 use futures::future::join_all;
-// use itertools::Itertools;
+use itertools::Itertools;
 use std::error::Error;
 
 mod cloudflare;
@@ -23,20 +23,17 @@ async fn main() {
 }
 
 async fn exec() -> Result<(), Box<dyn Error>> {
-    let (black_list, white_list) = tokio::join!(
-        utils::read_file_content_and_download("lists.txt", false),
-        utils::read_file_content_and_download("whitelists.txt", true)
-    );
-
-    let mut sorted_block_list = black_list.difference(&white_list).collect::<Vec<_>>();
-    sorted_block_list.sort();
+    // let (black_list, white_list) = tokio::join!(
+    //     utils::read_file_content_and_download("lists.txt", false),
+    //     // utils::read_file_content_and_download("whitelists.txt", true)
+    // );
+    let temp_list = utils::read_file_content_and_download("lists.txt", false).await;
+    let black_list = temp_list.iter().sorted().collect::<Vec<_>>();
 
     println!("Black list size: {}", black_list.len());
-    println!("White list size: {}", white_list.len());
-    println!("Block list size: {}", sorted_block_list.len());
 
-    // match tokio::fs::write("block_list.txt", sorted_block_list.iter().join("\n")).await {
-    //     Ok(_) => println!("Wrote {} block list to file", sorted_block_list.len()),
+    // match tokio::fs::write("block_list.txt", black_list.iter().join("\n")).await {
+    //     Ok(_) => println!("Wrote {} block list to file", black_list.len()),
     //     Err(e) => println!("Error writing block list to file: {}", e),
     // }
     // return Ok(());
@@ -52,7 +49,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         .filter_map(|list| list["count"].as_u64())
         .sum::<u64>();
 
-    if sum_cf_lists_count == sorted_block_list.len() as u64 {
+    if sum_cf_lists_count == black_list.len() as u64 {
         println!("No need to update.");
         return Ok(());
     }
@@ -79,7 +76,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     join_all(delete_list_tasks).await;
 
     // Create cf list by chunk of 1000 with name containing incremental number
-    let create_list_tasks = sorted_block_list
+    let create_list_tasks = black_list
         .chunks(1000)
         .enumerate()
         .map(|(i, chunk)| {
