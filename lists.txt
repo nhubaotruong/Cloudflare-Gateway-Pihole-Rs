@@ -5,7 +5,8 @@ https://raw.githubusercontent.com/luxysiv/hosts/main/hosts.txt
 https://raw.githubusercontent.com/Yhonay/antipopads/master/hosts
 https://abpvn.com/android/abpvn.txt
 https://curbengh.github.io/malware-filter/vn-badsite-filter-domains.txt
-#https://curbengh.github.io/malware-filter/phishing-filter-domains.txt
+https://curbengh.github.io/malware-filter/phishing-filter-domains.txt
+https://curbengh.github.io/malware-filter/urlhaus-filter-domains-online.txt
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/alexa
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/huawei
 https://raw.githubusercontent.com/nextdns/native-tracking-domains/main/domains/roku
@@ -49,4 +50,7 @@ https://urlhaus.abuse.ch/downloads/hostfile/
 https://raw.githubusercontent.com/cbuijs/accomplist/master/easylist/optimized.black.domain.list
 https://raw.githubusercontent.com/cbuijs/accomplist/master/nextdns-recommended/optimized.black.domain.list
 https://v.firebog.net/hosts/Easyprivacy.txt
-https://gitlab.com/hagezi/mirror/-/raw/main/dns-blocklists/wildcard/fake-onlydomains.txt
+https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/crypto-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/ads-nl.txt
