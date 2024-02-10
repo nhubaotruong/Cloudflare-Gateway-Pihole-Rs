@@ -54,3 +54,5 @@ https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/crypto-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/ads-nl.txt
+https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
+https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
