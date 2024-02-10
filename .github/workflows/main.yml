@@ -14,39 +14,25 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      # - name: Download latest build
-      #   uses: dsaltares/fetch-gh-release-asset@1.1.1
-      #   with:
-      #     repo: "nhubaotruong/Cloudflare-Gateway-Pihole-Rs"
-      #     file: "cloudflare_gateway_pihole"
       
-      - name: Setup mold
-        uses: rui314/setup-mold@v1
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
         with:
-          make-default: true
+          version: latest
       
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-
-      - name: Set up cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
       - name: Build
-        run: cargo build --release --locked
-
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          pull: true
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: cloudflare_gateway_pihole:latest
+      
       - name: Run
-        run: cargo run --release
-        env:
+        run: |
+          docker run --name cloudflare_gateway_pihole --env CF_API_TOKEN=$CF_API_TOKEN --env CF_IDENTIFIER=$CF_IDENTIFIER cloudflare_gateway_pihole:latest
+        env: 
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_IDENTIFIER: ${{ secrets.CF_IDENTIFIER }}
