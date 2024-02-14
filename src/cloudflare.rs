@@ -47,7 +47,10 @@ pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists";
     let resp = match CLIENT.get(&url).send().await {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
@@ -64,7 +67,10 @@ pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
                 )
             })
             .and_then(|result| Some(result.collect::<Vec<_>>())),
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
     };
     return content;
 }
@@ -86,13 +92,19 @@ pub async fn create_cf_list(name: String, domains: Vec<&String>) -> Option<serde
         .await
     {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
             .and_then(|result| Some(result.to_owned())),
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
     };
     return content;
 }
@@ -101,13 +113,19 @@ pub async fn delete_cf_list(id: &str) -> Option<serde_json::Value> {
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/lists/" + id;
     let resp = match CLIENT.delete(&url).send().await {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
             .and_then(|result| Some(result.to_owned())),
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
     };
     return content;
 }
@@ -116,10 +134,16 @@ pub async fn get_gateway_policies(prefix: &str) -> Option<Vec<serde_json::Value>
     let url = CLOUDFLARE_API_URL.to_string() + "/gateway/rules";
     let resp = match CLIENT.get(&url).send().await {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
         Ok(content) => content
             .get("result")
             .and_then(|result| result.as_array())
@@ -164,13 +188,19 @@ pub async fn create_gateway_policy(
         .await
     {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
             .and_then(|result| Some(result.to_owned())),
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
     };
     return content;
 }
@@ -201,13 +231,19 @@ pub async fn update_gateway_policy(
         .await
     {
         Ok(resp) => resp,
-        Err(e) => panic!("Error sending request: {}", e),
+        Err(e) => {
+            println!("Error sending request: {}", e);
+            return None;
+        }
     };
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
             .and_then(|result| Some(result.to_owned())),
-        Err(e) => panic!("Error reading response: {}", e),
+        Err(e) => {
+            println!("Error reading response: {}", e);
+            return None;
+        }
     };
     return content;
 }
