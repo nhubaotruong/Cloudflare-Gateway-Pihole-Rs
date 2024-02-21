@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use regex::Regex;
 use reqwest::Client;
+use std;
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
@@ -131,6 +132,22 @@ static IP_PATTERN: Lazy<Regex> =
         },
     );
 
+static CUSTOM_WHITELIST: Lazy<HashSet<String>> = Lazy::new(|| {
+    let white_list = match std::fs::read_to_string("custom_whitelist.txt") {
+        Ok(content) => content
+            .lines()
+            .filter_map(|line| {
+                if line.starts_with('#') {
+                    return None;
+                }
+                return Some(line.to_string());
+            })
+            .collect::<HashSet<_>>(),
+        Err(e) => panic!("Error reading file: {}", e),
+    };
+    return white_list;
+});
+
 fn filter_domain(line: &str) -> Option<String> {
     let domain = line.trim();
     if domain.starts_with('#')
@@ -163,7 +180,14 @@ fn filter_domain(line: &str) -> Option<String> {
                 Some(x)
             }
         })
-        .and_then(|x| Some(x.trim_start_matches("www.").to_string()));
+        .and_then(|x| Some(x.trim_start_matches("www.").to_string()))
+        .and_then(|x| {
+            if CUSTOM_WHITELIST.contains(&x) {
+                None
+            } else {
+                Some(x)
+            }
+        });
 
     return domain;
 }
