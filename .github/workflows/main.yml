@@ -36,3 +36,6 @@ jobs:
         env: 
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_IDENTIFIER: ${{ secrets.CF_IDENTIFIER }}
+      
+      - name: Clean old cache
+        uses: MyAlbum/purge-cache@v2
