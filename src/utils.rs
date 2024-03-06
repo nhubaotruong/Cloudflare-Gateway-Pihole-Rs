@@ -9,9 +9,13 @@ use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 
-pub async fn read_file_content_and_download(name: &str, skip_filter: bool) -> HashSet<String> {
+pub async fn read_file_content_and_download(
+    name: &str,
+    skip_filter: bool,
+    white_list: Option<HashSet<String>>,
+) -> HashSet<String> {
     let urls = read_file_content(&name).await;
-    let content = get_content_from_urls(&urls, &skip_filter).await;
+    let content = get_content_from_urls(&urls, &skip_filter, &white_list).await;
     return content;
 }
 
@@ -40,7 +44,11 @@ static CLIENT: Lazy<Client> = Lazy::new(|| {
     return client;
 });
 
-async fn get_content_from_urls(urls: &Vec<String>, skip_filter: &bool) -> HashSet<String> {
+async fn get_content_from_urls(
+    urls: &Vec<String>,
+    skip_filter: &bool,
+    white_list: &Option<HashSet<String>>,
+) -> HashSet<String> {
     let tasks = urls
         .iter()
         .map(|url| download_content(&url))
@@ -50,7 +58,7 @@ async fn get_content_from_urls(urls: &Vec<String>, skip_filter: &bool) -> HashSe
         .iter()
         .map(|x| x.lines())
         .flatten()
-        .filter_map(filter_domain)
+        .filter_map(|x| filter_domain(x, &white_list))
         .collect::<HashSet<_>>();
 
     if *skip_filter {
@@ -132,23 +140,7 @@ static IP_PATTERN: Lazy<Regex> =
         },
     );
 
-static CUSTOM_WHITELIST: Lazy<HashSet<String>> = Lazy::new(|| {
-    let white_list = match std::fs::read_to_string("custom_whitelist.txt") {
-        Ok(content) => content
-            .lines()
-            .filter_map(|line| {
-                if line.starts_with('#') {
-                    return None;
-                }
-                return Some(line.to_string());
-            })
-            .collect::<HashSet<_>>(),
-        Err(e) => panic!("Error reading file: {}", e),
-    };
-    return white_list;
-});
-
-fn filter_domain(line: &str) -> Option<String> {
+fn filter_domain(line: &str, white_list: &Option<HashSet<String>>) -> Option<String> {
     let domain = line.trim();
     if domain.starts_with('#')
         || domain.starts_with('!')
@@ -181,12 +173,15 @@ fn filter_domain(line: &str) -> Option<String> {
             }
         })
         .and_then(|x| Some(x.trim_start_matches("www.").to_string()))
-        .and_then(|x| {
-            if CUSTOM_WHITELIST.contains(&x) {
-                None
-            } else {
-                Some(x)
+        .and_then(|x| match white_list {
+            Some(white_list) => {
+                if white_list.contains(&x) {
+                    None
+                } else {
+                    Some(x)
+                }
             }
+            None => Some(x),
         });
 
     return domain;

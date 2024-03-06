@@ -1,2 +1,0 @@
-onelink.me
-sentry.io

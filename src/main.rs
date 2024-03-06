@@ -23,11 +23,9 @@ async fn main() {
 }
 
 async fn exec() -> Result<(), Box<dyn Error>> {
-    // let (black_list, white_list) = tokio::join!(
-    //     utils::read_file_content_and_download("lists.txt", false),
-    //     // utils::read_file_content_and_download("whitelists.txt", true)
-    // );
-    let temp_list = utils::read_file_content_and_download("lists.txt", false).await;
+    let white_list = utils::read_file_content_and_download("whitelists.txt", true, None).await;
+    let temp_list =
+        utils::read_file_content_and_download("lists.txt", false, Some(white_list)).await;
     let black_list = temp_list.iter().sorted().collect::<Vec<_>>();
 
     println!("Black list size: {}", black_list.len());
