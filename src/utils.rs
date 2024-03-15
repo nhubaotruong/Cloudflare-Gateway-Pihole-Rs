@@ -111,7 +111,10 @@ async fn download_content(url: &str) -> String {
         Ok(content) => content,
         Err(e) => panic!("Error reading response: {}", e),
     };
-    println!("Downloaded: {} . File size: {}", url, content.len());
+    // println!("Downloaded: {} . File size: {}", url, content.len());
+    // if content.contains("hcaptcha.com") {
+    //     println!("{url}");
+    // }
     return content;
 }
 

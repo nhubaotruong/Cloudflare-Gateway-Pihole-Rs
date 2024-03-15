@@ -47,9 +47,9 @@ https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/native.lgwe
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/fake-onlydomains.txt
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/popupads-onlydomains.txt
 https://urlhaus.abuse.ch/downloads/hostfile/
-https://raw.githubusercontent.com/cbuijs/accomplist/master/easylist/optimized.black.domain.list
-https://raw.githubusercontent.com/cbuijs/accomplist/master/nextdns-recommended/optimized.black.domain.list
+https://v.firebog.net/hosts/Easylist.txt
 https://v.firebog.net/hosts/Easyprivacy.txt
+https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/light-onlydomains.txt
 https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/crypto-nl.txt
