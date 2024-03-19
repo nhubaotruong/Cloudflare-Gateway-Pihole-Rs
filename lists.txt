@@ -50,9 +50,10 @@ https://urlhaus.abuse.ch/downloads/hostfile/
 https://v.firebog.net/hosts/Easylist.txt
 https://v.firebog.net/hosts/Easyprivacy.txt
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/light-onlydomains.txt
+https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt
 https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
 https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
-https://blocklistproject.github.io/Lists/alt-version/crypto-nl.txt
-https://blocklistproject.github.io/Lists/alt-version/ads-nl.txt
-https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
 https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt
+https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
+https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
