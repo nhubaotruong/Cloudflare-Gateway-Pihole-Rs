@@ -79,7 +79,6 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         .enumerate()
         .map(|(i, chunk)| {
             let name = format!("{cf_prefix} {i}");
-            println!("Creating list {name}");
             let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
             return cloudflare::create_cf_list(name, chunk_str_refs);
         })
