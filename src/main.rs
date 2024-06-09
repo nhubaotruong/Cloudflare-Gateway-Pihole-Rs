@@ -37,17 +37,22 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     // return Ok(());
 
     let cf_prefix = "[AdBlock-DNS Block List]";
-    let cf_lists = cloudflare::get_cf_lists(cf_prefix)
-        .await
-        .unwrap_or(Vec::<serde_json::Value>::new());
-    println!("Cloudflare list size: {}", cf_lists.len());
+    let cf_lists = cloudflare::get_cf_lists(cf_prefix).await;
+    let cf_lists_len = cf_lists.as_ref().map_or_else(|| 0, |l| l.len());
+    println!("Cloudflare list size: {}", cf_lists_len);
 
-    let sum_cf_lists_count = cf_lists
-        .iter()
-        .filter_map(|list| list["count"].as_u64())
-        .sum::<u64>();
+    let sum_cf_lists_count = cf_lists.as_ref().and_then(|lists| {
+        Some(
+            lists
+                .iter()
+                .filter_map(|list| list["count"].as_u64())
+                .sum::<u64>(),
+        )
+    });
 
-    if sum_cf_lists_count == black_list.len() as u64 {
+    let is_need_update =
+        sum_cf_lists_count.map_or_else(|| true, |sum| sum != black_list.len() as u64);
+    if !is_need_update {
         println!("No need to update.");
         return Ok(());
     }
@@ -57,21 +62,28 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     println!("Deleted {deleted_policy} gateway policies");
 
     // Delete all lists parallely tokio
-    let delete_list_tasks = cf_lists
-        .iter()
-        .filter_map(|list| {
-            let name = list["name"].as_str();
-            let id = list["id"].as_str();
-            match (name, id) {
-                (Some(name), Some(id)) => {
-                    println!("Deleting list {name} - ID:{id}");
-                    Some(cloudflare::delete_cf_list(id))
-                }
-                _ => None,
-            }
-        })
-        .collect::<Vec<_>>();
-    join_all(delete_list_tasks).await;
+    let delete_list_tasks = cf_lists.as_ref().and_then(|lists| {
+        Some(
+            lists
+                .iter()
+                .filter_map(|list| {
+                    let name = list["name"].as_str();
+                    let id = list["id"].as_str();
+                    match (name, id) {
+                        (Some(name), Some(id)) => {
+                            println!("Deleting list {name} - ID:{id}");
+                            Some(cloudflare::delete_cf_list(id.as_ref()))
+                        }
+                        _ => None,
+                    }
+                })
+                .collect::<Vec<_>>(),
+        )
+    });
+
+    delete_list_tasks.map(|tasks| async {
+        join_all(tasks).await;
+    });
 
     // Create cf list by chunk of 1000 with name containing incremental number
     let create_list_tasks = black_list

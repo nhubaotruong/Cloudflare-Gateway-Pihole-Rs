@@ -139,6 +139,14 @@ pub async fn get_gateway_policies(prefix: &str) -> Option<Vec<serde_json::Value>
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Err(e) => {
             println!("Error reading response: {}", e);
@@ -193,6 +201,14 @@ pub async fn create_gateway_policy(
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
@@ -236,6 +252,14 @@ pub async fn update_gateway_policy(
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
@@ -266,6 +290,14 @@ pub async fn delete_gateway_policy(prefix: &str) -> i32 {
         Ok(resp) => resp,
         Err(e) => panic!("Error sending request: {}", e),
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return 0;
+    }
     match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
