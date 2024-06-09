@@ -52,6 +52,14 @@ pub async fn get_cf_lists(prefix: &str) -> Option<Vec<serde_json::Value>> {
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
@@ -97,6 +105,14 @@ pub async fn create_cf_list(name: String, domains: Vec<&String>) -> Option<serde
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
@@ -118,6 +134,14 @@ pub async fn delete_cf_list(id: &str) -> Option<serde_json::Value> {
             return None;
         }
     };
+    let status = resp.status();
+    if status != 200 {
+        match &resp.text().await {
+            Ok(body) => println!("Error response: {}, body: {}", status, body),
+            Err(e) => println!("Error response: {}, error reading body: {}", status, e),
+        }
+        return None;
+    }
     let content = match resp.json::<serde_json::Value>().await {
         Ok(content) => content
             .get("result")
