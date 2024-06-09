@@ -81,9 +81,11 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         )
     });
 
-    delete_list_tasks.map(|tasks| async {
+    if let Some(tasks) = delete_list_tasks {
         join_all(tasks).await;
-    });
+    }
+
+    tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
 
     // Create cf list by chunk of 1000 with name containing incremental number
     let create_list_tasks = black_list
