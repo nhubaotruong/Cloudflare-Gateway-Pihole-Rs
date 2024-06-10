@@ -94,7 +94,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
             match (name, id) {
                 (Some(name), Some(id)) => {
                     let current_count = request_count.fetch_add(1, Ordering::Relaxed);
-                    if current_count > 4 {
+                    if current_count > 2 {
                         let now = tokio::time::Instant::now();
                         let elapsed = 1000 - now.elapsed().as_millis();
                         tokio::time::sleep(tokio::time::Duration::from_millis(elapsed as u64))
@@ -129,7 +129,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         let name = format!("{cf_prefix} {i}");
         let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
         let current_count = request_count.fetch_add(1, Ordering::Relaxed);
-        if current_count > 4 {
+        if current_count > 2 {
             let now = tokio::time::Instant::now();
             let elapsed = 1000 - now.elapsed().as_millis();
             tokio::time::sleep(tokio::time::Duration::from_millis(elapsed as u64)).await;
