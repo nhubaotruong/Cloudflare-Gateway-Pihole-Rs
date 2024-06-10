@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use std::error::Error;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 mod cloudflare;
 mod utils;
@@ -85,22 +84,12 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     //     join_all(tasks).await;
     // }
 
-    let request_count: AtomicUsize = AtomicUsize::new(0);
-
     if let Some(lists) = cf_lists.as_ref() {
         for list in lists.iter() {
             let name = list["name"].as_str();
             let id = list["id"].as_str();
             match (name, id) {
                 (Some(name), Some(id)) => {
-                    let current_count = request_count.fetch_add(1, Ordering::Relaxed);
-                    if current_count > 1 {
-                        let now = tokio::time::Instant::now();
-                        let elapsed = 1000 - now.elapsed().as_millis();
-                        tokio::time::sleep(tokio::time::Duration::from_millis(elapsed as u64))
-                            .await;
-                        request_count.store(0, Ordering::Relaxed);
-                    }
                     println!("Deleting list {name} - ID:{id}");
                     cloudflare::delete_cf_list(id.as_ref()).await;
                 }
@@ -123,18 +112,10 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     //     .collect::<Vec<_>>();
     // let new_cf_list = join_all(create_list_tasks).await;
 
-    let request_count: AtomicUsize = AtomicUsize::new(0);
     let mut new_cf_list: Vec<Option<serde_json::Value>> = Vec::new();
     for (i, chunk) in black_list.chunks(1000).enumerate() {
         let name = format!("{cf_prefix} {i}");
         let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
-        let current_count = request_count.fetch_add(1, Ordering::Relaxed);
-        if current_count > 1 {
-            let now = tokio::time::Instant::now();
-            let elapsed = 1000 - now.elapsed().as_millis();
-            tokio::time::sleep(tokio::time::Duration::from_millis(elapsed as u64)).await;
-            request_count.store(0, Ordering::Relaxed);
-        }
         new_cf_list.push(cloudflare::create_cf_list(name, chunk_str_refs).await);
     }
 
