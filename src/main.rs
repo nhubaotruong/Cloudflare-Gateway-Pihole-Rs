@@ -95,6 +95,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
                 }
                 _ => {}
             }
+            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
         }
     }
 
@@ -117,6 +118,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
         let name = format!("{cf_prefix} {i}");
         let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
         new_cf_list.push(cloudflare::create_cf_list(name, chunk_str_refs).await);
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
     }
 
     let new_cf_list_ids = new_cf_list
