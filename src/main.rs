@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use itertools::Itertools;
 use std::error::Error;
 
@@ -61,65 +62,65 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     println!("Deleted {deleted_policy} gateway policies");
 
     // Delete all lists parallely tokio
-    // let delete_list_tasks = cf_lists.as_ref().and_then(|lists| {
-    //     Some(
-    //         lists
-    //             .iter()
-    //             .filter_map(|list| {
-    //                 let name = list["name"].as_str();
-    //                 let id = list["id"].as_str();
-    //                 match (name, id) {
-    //                     (Some(name), Some(id)) => {
-    //                         println!("Deleting list {name} - ID:{id}");
-    //                         Some(cloudflare::delete_cf_list(id.as_ref()))
-    //                     }
-    //                     _ => None,
-    //                 }
-    //             })
-    //             .collect::<Vec<_>>(),
-    //     )
-    // });
+    let delete_list_tasks = cf_lists.as_ref().and_then(|lists| {
+        Some(
+            lists
+                .iter()
+                .filter_map(|list| {
+                    let name = list["name"].as_str();
+                    let id = list["id"].as_str();
+                    match (name, id) {
+                        (Some(name), Some(id)) => {
+                            println!("Deleting list {name} - ID:{id}");
+                            Some(cloudflare::delete_cf_list(id.as_ref()))
+                        }
+                        _ => None,
+                    }
+                })
+                .collect::<Vec<_>>(),
+        )
+    });
 
-    // if let Some(tasks) = delete_list_tasks {
-    //     join_all(tasks).await;
-    // }
-
-    if let Some(lists) = cf_lists.as_ref() {
-        for list in lists.iter() {
-            let name = list["name"].as_str();
-            let id = list["id"].as_str();
-            match (name, id) {
-                (Some(name), Some(id)) => {
-                    println!("Deleting list {name} - ID:{id}");
-                    cloudflare::delete_cf_list(id.as_ref()).await;
-                }
-                _ => {}
-            }
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-        }
+    if let Some(tasks) = delete_list_tasks {
+        join_all(tasks).await;
     }
+
+    // if let Some(lists) = cf_lists.as_ref() {
+    //     for list in lists.iter() {
+    //         let name = list["name"].as_str();
+    //         let id = list["id"].as_str();
+    //         match (name, id) {
+    //             (Some(name), Some(id)) => {
+    //                 println!("Deleting list {name} - ID:{id}");
+    //                 cloudflare::delete_cf_list(id.as_ref()).await;
+    //             }
+    //             _ => {}
+    //         }
+    //         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    //     }
+    // }
 
     // tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
 
     // Create cf list by chunk of 1000 with name containing incremental number
-    // let create_list_tasks = black_list
-    //     .chunks(1000)
-    //     .enumerate()
-    //     .map(|(i, chunk)| {
-    //         let name = format!("{cf_prefix} {i}");
-    //         let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
-    //         return cloudflare::create_cf_list(name, chunk_str_refs);
-    //     })
-    //     .collect::<Vec<_>>();
-    // let new_cf_list = join_all(create_list_tasks).await;
+    let create_list_tasks = black_list
+        .chunks(1000)
+        .enumerate()
+        .map(|(i, chunk)| {
+            let name = format!("{cf_prefix} {i}");
+            let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
+            return cloudflare::create_cf_list(name, chunk_str_refs);
+        })
+        .collect::<Vec<_>>();
+    let new_cf_list = join_all(create_list_tasks).await;
 
-    let mut new_cf_list: Vec<Option<serde_json::Value>> = Vec::new();
-    for (i, chunk) in black_list.chunks(1000).enumerate() {
-        let name = format!("{cf_prefix} {i}");
-        let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
-        new_cf_list.push(cloudflare::create_cf_list(name, chunk_str_refs).await);
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-    }
+    // let mut new_cf_list: Vec<Option<serde_json::Value>> = Vec::new();
+    // for (i, chunk) in black_list.chunks(1000).enumerate() {
+    //     let name = format!("{cf_prefix} {i}");
+    //     let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
+    //     new_cf_list.push(cloudflare::create_cf_list(name, chunk_str_refs).await);
+    //     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    // }
 
     let new_cf_list_ids = new_cf_list
         .iter()
