@@ -4,6 +4,8 @@ use std::error::Error;
 mod cloudflare;
 mod utils;
 
+static SLEEP_TIME_SEC: u64 = 4;
+
 #[tokio::main]
 async fn main() {
     let mut is_done = false;
@@ -15,7 +17,7 @@ async fn main() {
             }
             Err(e) => {
                 println!("Error: {}", e);
-                tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
+                tokio::time::sleep(tokio::time::Duration::from_secs(SLEEP_TIME_SEC)).await;
             }
         }
     }
@@ -95,7 +97,7 @@ async fn exec() -> Result<(), Box<dyn Error>> {
                 }
                 _ => {}
             }
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(SLEEP_TIME_SEC)).await;
         }
     }
 
@@ -117,8 +119,9 @@ async fn exec() -> Result<(), Box<dyn Error>> {
     for (i, chunk) in black_list.chunks(1000).enumerate() {
         let name = format!("{cf_prefix} {i}");
         let chunk_str_refs = chunk.iter().map(|&s| s).collect::<Vec<_>>();
+        println!("Creating list {name}");
         new_cf_list.push(cloudflare::create_cf_list(name, chunk_str_refs).await);
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        tokio::time::sleep(tokio::time::Duration::from_secs(SLEEP_TIME_SEC)).await;
     }
 
     let new_cf_list_ids = new_cf_list
