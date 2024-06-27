@@ -36,7 +36,7 @@ https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/android-tracking.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV.txt
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/AmazonFireTV.txt
-https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
+#https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/native.amazon.txt
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/native.apple.txt
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/native.huawei.txt
@@ -50,10 +50,11 @@ https://v.firebog.net/hosts/Easylist.txt
 #https://v.firebog.net/hosts/Easyprivacy.txt
 #https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/light-onlydomains.txt
 #https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif.medium-onlydomains.txt
-#https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt
-#https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
-#https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
-#https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
-#https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt
+https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestdomains.txt
+https://blocklistproject.github.io/Lists/alt-version/gambling-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
+https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt
 #https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
-#https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
+https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
+https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-only/hosts
