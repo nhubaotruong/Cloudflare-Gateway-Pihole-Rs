@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use itertools::Itertools;
 use std::error::Error;
 
